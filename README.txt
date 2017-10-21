@@ -8,7 +8,7 @@ So, we concentrate on these two models. In the coefficient summary, we find that
 
 Finally, we run the residual plots for both models. We find that the model with Income, Limit and Students performs much better than the other model in this respect. Although the anova test indicates preference of the other model, we still choose the model with Income, Limit and Students as our final model because of its good residual performance, better interpretability and already high enough R square (0.9905).
 
-If you would like to receive more details about the analysis, please refer to the R code.
+If you would like to receive more details about the analysis, please refer to the Rmd code.
 
 
 Final Model:
