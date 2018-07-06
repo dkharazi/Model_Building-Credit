@@ -10,6 +10,20 @@ So, we concentrate on these two models. In the coefficient summary, we find that
 
 Finally, we run the residual plots for both models. We find that the model with Income, Limit and Students performs much better than the other model in this respect. Although the anova test indicates preference of the other model, we still choose the model with Income, Limit and Students as our final model because of its good residual performance, better interpretability and already high enough R square (0.9905).
 
+## Variable Descriptions
+
+- `Income:` The income of the individual.
+- `Limit:` The credit limit of the individual.
+- `Rating:` The credit rating of the individual.
+- `Cards:` The type of card that the individual owns.
+- `Age:` The age of the individual.
+- `Education:` The education of the individual.
+- `Gender:` The gender of the individual.
+- `Student:` Whether the individual is a student or not.
+- `Married:` Whether the individual is married or not.
+- `Ethnicity:` The ethnicity of the individual.
+- `Balance:` The credit balance of the individual.
+
 If you would like to receive more details about the analysis, please refer to the Rmd code.
 
 
