@@ -28,6 +28,10 @@ summary(newcredit)
 plot(newcredit,pch=19,cex=0.25)
 ```
 
+<p align="center">
+  <img width="400" height="400" src="/graphics/plot1.png">
+</p>
+
 After observing the pairwise plots, it seems like limit, rating and income are relatively strongly correlated with the balance. However, limit, rating and income have collinearity among them. Based on the relationships between the predictors in the pairwise plot, we will most likely stick to a simple linear regression model.
 
 ```{r box}
@@ -53,6 +57,10 @@ levels(newcredit$Married)
 levels(newcredit$Ethnicity)
 ```
 
+<p align="center">
+  <img width="400" height="400" src="/graphics/plot2.png">
+</p>
+
 It seems that the 'student' variable has some influence on the balance, since we see a clear shift in the corresponding boxplots. Based on our current state in the exploratory analysis, we prefer to include limit, rating, income and student into the model, but we should be concerned about multicollinearity among the predictors. Since we only have 155 observations and 11 variables, a more inflexible model like simple linear model will cancel our concern about overfitting, due to the correlated predictors, and gives us more interpretability. Also, we defer the potential interactions among the 'student' variable and other variables for a similar reason.
 
 ## Full Simple Linear Regression Model
@@ -68,17 +76,17 @@ From the summary of the coefficients, it seems clear that we should drop several
 ```{r resid}
 ## Residual plots for continuous predictors
 resf = rstandard(fitf)
-plot(resf) # by index
-plot(predict(fitf),resf)  # by predicted
-plot(newcredit$Income,resf) # by income
-plot(newcredit$Limit,resf)  # by credit limit
-plot(newcredit$Rating,resf) # by credit rating
-plot(newcredit$Cards,resf)  # by number of CC
-plot(newcredit$Age,resf)    # by age
-plot(newcredit$Education,resf) # by education level
-hist(resf,main="") # histogram
+plot(resf) # By index
+plot(predict(fitf),resf)  # By predicted
+plot(newcredit$Income,resf) # By income
+plot(newcredit$Limit,resf)  # By credit limit
+plot(newcredit$Rating,resf) # By credit rating
+plot(newcredit$Cards,resf)  # By number of CC
+plot(newcredit$Age,resf)    # By age
+plot(newcredit$Education,resf) # By education level
+hist(resf,main="") # Histogram
 
-# Residual boxplots for categorical predictors
+## Residual boxplots for categorical predictors
 par(mfrow=c(2,2))
 with(newcredit,{
   plot(resf~Gender)
@@ -90,6 +98,15 @@ with(newcredit,{
 ## Q-Q plots
 qqPlot(resf)
 ```
+
+<div id="header">
+    <p style="float: left; width: 50%; text-align: left;">
+    		<img width="400" height="400" src="/graphics/plot3.png">
+		</p>
+	  <p style="float: left; width: 50%; text-align: right;">
+    		<img width="400" height="400" src="/graphics/plot4.png">
+    </p>
+</div>
 
 Although the histogram shows a bit of skewness to the left, the residuals perform pretty well, since they are randomly distributed among the x-axis range between -2 and 2. However, the Q-Q plot does show some degree of departure at the tails, which challenges the normality assumption about the residuals. With that being said, the problem does not seem to severe, so we will choose to bear this issue until we examine the normality of a smaller model.
 
@@ -122,6 +139,10 @@ sum.reg$outmat[7,]  # Income, Limit, Cards, Student,
 ## BIC suggested model 5
 sum.reg$outmat[5,]  # Income, Limit, Student
 ```
+
+<p align="center">
+  <img width="400" height="400" src="/graphics/plot5.png">
+</p>
 
 In our exhaustive search, we will save the 2 best models for each number of predictors, and we will not limit the maximum amount of variables that can be included in our model. Since we only have 11 variables, we will perform an exhaustive search for variables in order to understand the marginal effect that the variables have on the response variable. From the exhaustive search, it seems that the 'income' variable has the most explaratory power. The next most powerful variables are 'limit' and 'rating', which seem to compete with each other while the 'student' variable joins the competation later in the search. The 'cards', 'age', 'education', and 'ethnicity' variables also have some explanatory power, but they are not as significant as the variables that were previously mentioned.
 
@@ -159,6 +180,14 @@ avPlots(fit7,cex=2)
 avPlots(fit5,cex=2)
 ```
 
+<p align="left">
+  <img width="400" height="400" src="/graphics/plot6.png">
+</p>
+
+<p align="left">
+  <img width="400" height="400" src="/graphics/plot7.png">
+</p>
+
 It seems that both models perform extremely well, since their adjusted R-squared values are both very high. The p-values for each coefficient in the two models are very small, as well. In our analysis, we used an ANOVA table to check if each coefficient contributes to explain the 'balance' variable, or our response variable. After examining the ANOVA tables and the summaries of the coefficients for each model, it seems clear that we should reject the null models and prefer the bigger models in both cases. According to these summaries and the added variable plots, our current models are better than the null models.
 
 ```{r modassumptions}
@@ -191,6 +220,14 @@ qqPlot(res5)  # QQ plot
 anova(fit5, fit7)
 ```
 
+<p align="left">
+  <img width="400" height="400" src="/graphics/plot8.png">
+</p>
+
+<p align="left">
+  <img width="400" height="400" src="/graphics/plot9.png">
+</p>
+
 After fitting our model with the best BIC score, we want to check whether the model assumptions are still maintained by observing the residual plots for each variable included. The histogram of the standard residuals seems to be inconsistent with the assumption of normality, and there seems to be a lot of skewness ocurring in the Q-Q plots.
 
 After fitting our model with the best R-squared score, we want to further investigate that the model assumptions have been maintained. For the most part, it seems that the residual plots are randomly spread between the range of -2 and 2 along the x-axis. Although the Q-Q plot depicts some skewness, the histogram seems to be relatively consistent with assumption of normality, meaning we should have some concern about the model, but not too much.
@@ -216,5 +253,9 @@ par(mfrow=c(1,2))
 hist(res5,main="") # Histogram
 qqPlot(res5)  # QQ plot
 ```
+
+<p align="center">
+  <img width="400" height="400" src="/graphics/plot10.png">
+</p>
 
 Although the ANOVA test leads us to prefer the model with the highest R-squared value, we are very concerned with its residual plots. The model with the highest BIC score followed the assumptions of normality much better in comparison, and the model is much easier to interpret, as well. Additionally, this model still has a high R-squared value, and thus explain the data well enough. In conclusion, we should finally choose a model containing the 'income', 'limit', and 'student' variables when predicting your credit card balance.
