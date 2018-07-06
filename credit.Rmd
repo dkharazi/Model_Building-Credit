@@ -51,7 +51,7 @@ levels(newcredit$Gender)
 levels(newcredit$Student)
 levels(newcredit$Married)
 levels(newcredit$Ethnicity)
-````
+```
 
 It seems that the 'student' variable has some influence on the balance, since we see a clear shift in the corresponding boxplots. Based on our current state in the exploratory analysis, we prefer to include limit, rating, income and student into the model, but we should be concerned about multicollinearity among the predictors. Since we only have 155 observations and 11 variables, a more inflexible model like simple linear model will cancel our concern about overfitting, due to the correlated predictors, and gives us more interpretability. Also, we defer the potential interactions among the 'student' variable and other variables for a similar reason.
 
