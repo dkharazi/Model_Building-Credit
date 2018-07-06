@@ -99,14 +99,13 @@ with(newcredit,{
 qqPlot(resf)
 ```
 
-<div id="header">
-    <p style="float: left; width: 50%; text-align: left;">
-    		<img width="400" height="400" src="/graphics/plot3.png">
-		</p>
-	  <p style="float: left; width: 50%; text-align: right;">
-    		<img width="400" height="400" src="/graphics/plot4.png">
-    </p>
-</div>
+<p align="center">
+	<img width="400" height="400" src="/graphics/plot3.png">
+</p>
+
+<p align="center">
+  <img width="400" height="400" src="/graphics/plot4.png">
+</p>
 
 Although the histogram shows a bit of skewness to the left, the residuals perform pretty well, since they are randomly distributed among the x-axis range between -2 and 2. However, the Q-Q plot does show some degree of departure at the tails, which challenges the normality assumption about the residuals. With that being said, the problem does not seem to severe, so we will choose to bear this issue until we examine the normality of a smaller model.
 
@@ -180,11 +179,11 @@ avPlots(fit7,cex=2)
 avPlots(fit5,cex=2)
 ```
 
-<p align="left">
+<p align="center">
   <img width="400" height="400" src="/graphics/plot6.png">
 </p>
 
-<p align="left">
+<p align="center">
   <img width="400" height="400" src="/graphics/plot7.png">
 </p>
 
@@ -220,11 +219,11 @@ qqPlot(res5)  # QQ plot
 anova(fit5, fit7)
 ```
 
-<p align="left">
+<p align="center">
   <img width="400" height="400" src="/graphics/plot8.png">
 </p>
 
-<p align="left">
+<p align="center">
   <img width="400" height="400" src="/graphics/plot9.png">
 </p>
 
