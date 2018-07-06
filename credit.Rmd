@@ -1,20 +1,37 @@
-##
-Author @DariusKharazi
-##
+---
+title: "Credit"
+author: "Darius Kharazi"
+date: "7/12/2016"
+output: html_document
+---
 
-EDA
-```{r}
+## Import Statements
+
+```{r imports, include = FALSE}
+## Import libraries
+library(car)
+library(leaps)
+
 ## Read in Credit Data
 load("") ## Enter the location of the "credit.Rdata" here
+```
+
+First, we should load the data.
+
+## Exploratory Analysis
+
+```{r pair}
+## Summarize data
 summary(newcredit)
 
 ## Pairwise Plot
-## It seems like Limit, Rating and Income are relatively strongly correlated with the Balance. However,
-## Limit, Rating and Income have collinearity among them.
 plot(newcredit,pch=19,cex=0.25)
+```
 
+After observing the pairwise plots, it seems like limit, rating and income are relatively strongly correlated with the balance. However, limit, rating and income have collinearity among them. Based on the relationships between the predictors in the pairwise plot, we will most likely stick to a simple linear regression model.
+
+```{r box}
 ## Boxplots for categorical predictors
-## It seems that Student has some influence on the Balance since we see a clear shift in the corresponding plot.
 par(mfrow=c(2,2),cex.lab=2)
 with(newcredit,{
   plot(Balance~Gender)
@@ -23,40 +40,35 @@ with(newcredit,{
   plot(Balance~Ethnicity)
 })
 
+## Ensure the factor variables
 is.factor(newcredit$Gender)
 is.factor(newcredit$Student)
 is.factor(newcredit$Married)
 is.factor(newcredit$Ethnicity)
 
+## Examine the factor variables
 levels(newcredit$Gender)
 levels(newcredit$Student)
 levels(newcredit$Married)
 levels(newcredit$Ethnicity)
+````
 
-##So far, based on the exploratory analysis, we prefer to include Limit, Rating, Income and Student into the model while
-##also concern the collinearity among Limit, Rating and Income.
+It seems that the 'student' variable has some influence on the balance, since we see a clear shift in the corresponding boxplots. Based on our current state in the exploratory analysis, we prefer to include limit, rating, income and student into the model, but we should be concerned about multicollinearity among the predictors. Since we only have 155 observations and 11 variables, a more inflexible model like simple linear model will cancel our concern about overfitting, due to the correlated predictors, and gives us more interpretability. Also, we defer the potential interactions among the 'student' variable and other variables for a similar reason.
 
-## Since, in the pairwise plot, we don't see any clear curved pattern, we will stick to the simple linear model. Also, since 
-## we only have 155 observations and 11 variables, a more inflexible model like simple linear model will cancel our concern
-## about overfitting and gives us more interpretability. And we defer the potential interactions among Student and other
-## variables for the similar reason
+## Full Simple Linear Regression Model
 
-```
-
-
-Simple Linear Regression model
-```{r}
-##fit full model
-##From the coefficients summary, it is clear that there are potentials to drop several variables. Since their p values
-##are relatively large, marginally they are preffered to not to be included in the model. Also, since the R value is
-## extremely high, we conclude that we face the problem of overfitting. So, we need to drop some variables.
+```{r fullfit}
+## Fit a full model
 fitf = lm(Balance~Income+Limit+Rating+Cards+Age+Education+Gender+Student+Married+Ethnicity,data=newcredit)
 summary(fitf)
+```
 
-##Some residual plot
-# residual plots
+From the summary of the coefficients, it seems clear that we should drop several variables. Since their p-values are relatively large, they are marginally not preffered to be included in the model. Also, since the R-squared value is extremely high, we conclude that we face the problem of overfitting. So, we need to drop some variables.
+
+```{r resid}
+## Residual plots for continuous predictors
 resf = rstandard(fitf)
-plot(resf) #by index
+plot(resf) # by index
 plot(predict(fitf),resf)  # by predicted
 plot(newcredit$Income,resf) # by income
 plot(newcredit$Limit,resf)  # by credit limit
@@ -66,7 +78,7 @@ plot(newcredit$Age,resf)    # by age
 plot(newcredit$Education,resf) # by education level
 hist(resf,main="") # histogram
 
-# residual boxplots for categorical predictors
+# Residual boxplots for categorical predictors
 par(mfrow=c(2,2))
 with(newcredit,{
   plot(resf~Gender)
@@ -75,41 +87,28 @@ with(newcredit,{
   plot(resf~Ethnicity)
 })
 
-# qq plot:
-library(car)
+## Q-Q plots
 qqPlot(resf)
-
-##Although a little bit skewed left, the residual performs pretty well- random distributed among -2 and 2-.
-##However, qq plot does show some degree of departure at the tails.
-##So, it does challenge the normality assumption about the residuals. But, the problem is not that severe.
-##We choose to bear it until we examine the normality again with the smaller model.
-
 ```
 
+Although the histogram shows a bit of skewness to the left, the residuals perform pretty well, since they are randomly distributed among the x-axis range between -2 and 2. However, the Q-Q plot does show some degree of departure at the tails, which challenges the normality assumption about the residuals. With that being said, the problem does not seem to severe, so we will choose to bear this issue until we examine the normality of a smaller model.
 
-Exhaustive Search
-```{r}
-## Since we only have 11 variables, we will do the exhaustive to have a rough feeling.
-## From the exhaustive search, it seems Income have most explaratory power.Then, it's Limit and Rating, which seems to compete
-## with each other while Student joins the competation later in the search. Cards, Age, Education and Ethnicity also has some
-## explanatory power but probably not too strong. 
-library(leaps)
+## SLR model using an Exhaustive Search
 
+```{r exhaust}
+## Exhaustive search
 all.out=regsubsets(Balance ~ .,
-					data = newcredit,
-               		nbest = 2,     # save the 2 best models for each number of predictors
-               		nvmax = NULL,  # NULL for no limit on total number of variables in model
-               		force.in = NULL, force.out = NULL,  # if we wanted to add constraints
-               		really.big = FALSE, 	# default is false, set to true to enable exhaustive
-               								# search when p>50.
-            		method = "exhaustive")	# or "forward" for forward selection,
-                                     		# "backward" for backward elimination,
-                                     		# "seqrep" for stepwise regression.
+                   data = newcredit,
+		   nbest = 2,
+               	   nvmax = NULL,
+                   force.in = NULL,
+		   force.out = NULL,
+               	   really.big = FALSE,
+               	   method = "exhaustive")
+		   
 sum.reg=summary(all.out)
 
-
-
-# Plot the best models of each size respect to Adjusted R2 and BIC
+## Plot the best models according to adjusted R2 and BIC
 ixbest=seq(1,ncol(newcredit)*2-1,by=2)
 par(mfrow=c(1,2))
 plot(ixbest,sum.reg$adjr2[ixbest],pch=20,xlab="Model",ylab="adjR2",cex.lab=1,cex.axis=1)
@@ -117,106 +116,105 @@ abline(v=ixbest[which.max(sum.reg$adjr2[ixbest])])
 plot(ixbest,sum.reg$bic[ixbest],pch=20,xlab="Model",ylab="BIC",cex.lab=1,cex.axis=1)
 abline(v=ixbest[which.min(sum.reg$bic[ixbest])])
 
-
-##Adjusted R2 suggests model 7
+## Adjusted R2 suggests model 7
 sum.reg$outmat[7,]  # Income, Limit, Cards, Student, 
-##BIC suggested model 5
-sum.reg$outmat[5,]  # Income, Limit, Student
 
+## BIC suggested model 5
+sum.reg$outmat[5,]  # Income, Limit, Student
 ```
 
+In our exhaustive search, we will save the 2 best models for each number of predictors, and we will not limit the maximum amount of variables that can be included in our model. Since we only have 11 variables, we will perform an exhaustive search for variables in order to understand the marginal effect that the variables have on the response variable. From the exhaustive search, it seems that the 'income' variable has the most explaratory power. The next most powerful variables are 'limit' and 'rating', which seem to compete with each other while the 'student' variable joins the competation later in the search. The 'cards', 'age', 'education', and 'ethnicity' variables also have some explanatory power, but they are not as significant as the variables that were previously mentioned.
 
-Model Selection
-```{r}
-## Now we will focus on model 7 and model 5, it is glad that rating is not in the model. It 
-## is actually not surprising since there are collinearity among Income, Limit and Rating
+## Model Selection
+
+```{r models}
+## Model 7
 fit7=lm(Balance~Income+Limit+Cards+Student,data=newcredit)
-fit5=lm(Balance~Income+Limit+Student,data=newcredit)
 
+## Model 5
+fit5=lm(Balance~Income+Limit+Student,data=newcredit)
+```
+
+Now, we will focus on model 7 and model 5, since these models had the best R-squared and BIC scores. It should be noted that these models do not have the 'income', 'limit', and 'rating' variables, which is good, since these variables support a great deal of collinearity with each other.
+
+```{r anova}
+## Summarize the models
 summary(fit7)
 summary(fit5)
-##Surprisingly, both model performs extremly well. Adjusted Square is both very high. P values for each coefficient is low.
 
-
-
-
-# Better than "null" model?
+## Create a "null" model
 fit0 = lm(Balance~1,data=newcredit)
 summary(fit0)
+
+# Anova tables - Better than 'null' model?
 anova(fit0,fit5)
 anova(fit0,fit7)
-##We reject null model and prefer the bigger model in both cases
-##Our model is definitely better than the null model
 
-
-
-##Each coefficient does contribute to explain the Balance?
-##Anonva test
+## Anova tables - Does each coefficient contribute to explain the Balance?
 anova(fit5)
 anova(fit7)
+
 # Added variable plots
 avPlots(fit7,cex=2)
 avPlots(fit5,cex=2)
-##Here, it indicates that each varaible is useful in the model
-
-
-
-##Check model assumptions
-# residual plots for model 7
-res7 = rstandard(fit7)
-par(mfrow=c(2,3))
-plot(res7) #by index
-plot(predict(fit7),res7)  # by predicted
-plot(newcredit$Income,res7) # by income
-plot(newcredit$Limit,res7)  # by credit limit
-plot(newcredit$Cards,res7)  # by number of CC
-with(newcredit,{plot(res5~Student)})
-par(mfrow=c(1,2))
-hist(res7,main="") # histogram
-qqPlot(res7)  #qq plot
-#The Historgram of standard residuals seems to be inconsistent with normality assumption and qq plots performs not well.
-
-# residual plots for model 5
-res5= rstandard(fit5)
-par(mfrow=c(2,3))
-plot(res5) #by index
-plot(predict(fit5),res5)  # by predicted
-plot(newcredit$Income,res5) # by income
-plot(newcredit$Limit,res5)  # by credit limit
-with(newcredit,{plot(res5~Student)})
-par(mfrow=c(1,2))
-hist(res5,main="") # histogram
-qqPlot(res5)  #qq plot
-##residual plots overall seems to be random and among -2 and 2.
-##Although qq plot performs not that well, the histogram does seem to be relatively consistent with
-##normality assumption. And we have some concern about it but not that huge.
-
-#model 5 vs model 7 through anonva test
-anova(fit5, fit7)
-##From anova test, we do prefer model 7 rather than model 5.
-
 ```
 
+It seems that both models perform extremely well, since their adjusted R-squared values are both very high. The p-values for each coefficient in the two models are very small, as well. In our analysis, we used an ANOVA table to check if each coefficient contributes to explain the 'balance' variable, or our response variable. After examining the ANOVA tables and the summaries of the coefficients for each model, it seems clear that we should reject the null models and prefer the bigger models in both cases. According to these summaries and the added variable plots, our current models are better than the null models.
 
+```{r modassumptions}
+## Residual plots for model 7
+res7 = rstandard(fit7)
+par(mfrow=c(2,3))
+plot(res7) # By index
+plot(predict(fit7),res7)  # By predicted
+plot(newcredit$Income,res7) # By income
+plot(newcredit$Limit,res7)  # By credit limit
+plot(newcredit$Cards,res7)  # By number of CC
+with(newcredit,{plot(res5~Student)})
+par(mfrow=c(1,2))
+hist(res7,main="") # Histogram
+qqPlot(res7)  # QQ plot
 
-Model Selected
-```{r}
-##Although by anova test we prefer model 7, we are concerned with the residual plots of model 7 more. Also,
-##we are interested in the interpretability of the model selected. Additionally, since model 5 does explain the data well
-##enough based on its high R square, we finally choose model 5
-#So, we finally choose model 5
+# Residual plots for model 5
+res5= rstandard(fit5)
+par(mfrow=c(2,3))
+plot(res5) # By index
+plot(predict(fit5),res5)  # By predicted
+plot(newcredit$Income,res5) # By income
+plot(newcredit$Limit,res5)  # By credit limit
+with(newcredit,{plot(res5~Student)})
+par(mfrow=c(1,2))
+hist(res5,main="") # Histogram
+qqPlot(res5)  # QQ plot
+
+# Anova table - model 5 vs model 7
+anova(fit5, fit7)
+```
+
+After fitting our model with the best BIC score, we want to check whether the model assumptions are still maintained by observing the residual plots for each variable included. The histogram of the standard residuals seems to be inconsistent with the assumption of normality, and there seems to be a lot of skewness ocurring in the Q-Q plots.
+
+After fitting our model with the best R-squared score, we want to further investigate that the model assumptions have been maintained. For the most part, it seems that the residual plots are randomly spread between the range of -2 and 2 along the x-axis. Although the Q-Q plot depicts some skewness, the histogram seems to be relatively consistent with assumption of normality, meaning we should have some concern about the model, but not too much.
+
+Although both models have both positive and negative qualities, the ANOVA table leads us to prefer the model with the best R-squared value.
+
+## Final Model
+
+```{r final}
+## Prefer model 5
 fit5=lm(Balance~Income+Limit+Student,data=newcredit)
 summary(fit5)
 avPlots(fit5,cex=2)
 
+## Plots
 par(mfrow=c(2,3))
-plot(res5) #by index
-plot(predict(fit5),res5)  # by predicted
-plot(newcredit$Income,res5) # by income
-plot(newcredit$Limit,res5)  # by credit limit
+plot(res5) # By index
+plot(predict(fit5),res5)  # By predicted
+plot(newcredit$Income,res5) # By income
+plot(newcredit$Limit,res5)  # By credit limit
 with(newcredit,{plot(res5~Student)})
 par(mfrow=c(1,2))
-hist(res5,main="") # histogram
-qqPlot(res5)  #qq plot
-
+hist(res5,main="") # Histogram
+qqPlot(res5)  # QQ plot
 ```
+
+Although the ANOVA test leads us to prefer the model with the highest R-squared value, we are very concerned with its residual plots. The model with the highest BIC score followed the assumptions of normality much better in comparison, and the model is much easier to interpret, as well. Additionally, this model still has a high R-squared value, and thus explain the data well enough. In conclusion, we should finally choose a model containing the 'income', 'limit', and 'student' variables when predicting your credit card balance.
