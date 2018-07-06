@@ -20,4 +20,6 @@ Banks play a crucial role in market economies. They decide who can get finance a
 
 We find that the model with Income, Limit and Students performs much better than the other models. Although the ANOVA test indicates that we should prefer another model, we still choose the model with Income, Limit and Students as our final model because of its good residual performance, better interpretability, and already high enough R square (0.9905). Therefore, our final model is indicated below.
 
-Balance= -682.8 - 10.14*Income + 0.3278*Limit + 492.9*Student
+<p>
+  
+</p>
